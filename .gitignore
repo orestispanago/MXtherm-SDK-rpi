@@ -1,3 +1,13 @@
+
+*.rgb
+
 *.csv
-*.o
-*.d
+
+*.suo
+
+*.user
+samples/thermal-raw/vc2015/.vs/thermal-raw/v16/
+
+samples/thermal-raw/vc2015/thermal-raw/x64/Debug/
+
+src/build/
