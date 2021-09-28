@@ -64,6 +64,19 @@ typedef enum t_MxPEG_Sensor {
 	s_thermal
 } MxPEG_Sensor;
 
+typedef enum t_MxPEG_SubscriptionType {
+	st_elight,           //Door Station only: Change of state of external light
+	st_door,             //Door Station only: Change of state of door bell
+	st_alarmupdate,      //Alarm events, same format as returned by the AlarmList command
+	st_config            //Notifies config changes (json path and format as used by kurator)
+} MxPEG_SubscriptionType;
+
+typedef enum t_MxPEG_SeekMode {
+	sm_exact,      //Seek to frame with a ts that the exactly matches the the specified or return an error (#27 "clip not found")
+	sm_nearest,    //Seek to frame that is closest to the specified timestamp
+	sm_previous,   //Seek to frame that is closest to the specified timestamp - consider only frames with ts <= the specified timestamp
+	sm_next        //Seek to frame that is closest to timestamp - consider only frames with ts >= the specified timestamp
+} MxPEG_SeekMode;
 
 namespace ie { namespace MxPEG {
 typedef struct tMxPEGFrame

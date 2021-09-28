@@ -269,6 +269,8 @@ public:
     *
     */
    virtual uint32_t setVideoDisplayMode(std::string displayMode, bool configMode = true) = 0;
+   //use this variant for windows:
+   virtual uint32_t setVideoDisplayMode(const char * displayMode, bool configMode = true) = 0;
 
    /*
     * Enable/Disable audio for the current session.
@@ -297,6 +299,8 @@ public:
     *
     */
    virtual uint32_t setAudioMode(std::string mode) = 0;
+   //use this variant for windows:
+   virtual uint32_t setAudioMode(const char * mode) = 0;
 
    /*
     * Start streaming the live feed from the cameras currently active sensor
@@ -307,6 +311,68 @@ public:
    virtual uint32_t startLive() = 0;;
 
    /*
+    * Subscribe/Unsubscribe to events on the camera 
+    *
+    * MxPEG_SubscriptionType event_type: One of:
+    *	st_elight: Door Station only: Change of state of external light
+    * st_door: Door Station only: Change of state of door bell
+    * st_alarmupdate: Alarm events, same format as returned by the AlarmList command
+    * st_config: Notifies config changes (json path and format as used by kurator)
+    * 
+    * bool active: Use to sub- / unsubscribe
+    * true: subscribe
+    * false: unsubscribe
+    */
+   virtual uint32_t subscribe(MxPEG_SubscriptionType event_type, bool active) = 0;
+
+   /*
+    * Request a list of recent alarms from the camera:
+    * 
+    * const char * start_sequence: Sequence number of first alarmimage to consider in the search. Leave empty
+    * to start the search from HEAD.
+    *
+    * uint32_t num_alarms: Max. number of alarms to include in response
+    * 
+    * The response will contain a list of alarm events like this:
+    *
+    * {
+    *       "alarmimage": "002474.0",
+    *       "date": "2012-10-22",
+    *       "events": "VM",
+    *       "eventlist": [
+    *           {
+    *               "name": "VM",
+    *               "eventid": "VM",
+    *               "type": "IMA"
+    *           }
+    *       ],
+    *       "time": "14:02:42",
+    *       "timestamp": "1350907362.164"
+    *   }
+    */
+   virtual uint32_t alarmlist(const char * start_sequence, uint32_t num_alarms) = 0;
+
+   /*
+    * Seek to the specified timestamp. 
+    * 
+    * MxPEG_SeekMode mode: Specified the algorithen to select the target position:
+    *       sm_exact: Seek to frame with a ts that the exactly matches the the specified or return an error (#27 "clip not found")
+    *       sm_nearest: Seek to frame that is closest to the specified timestamp
+    *       sm_previous: Seek to frame that is closest to the specified timestamp - consider only frames with ts <= the specified timestamp
+    *       sm_next: Seek to frame that is closest to timestamp - consider only frames with ts >= the specified timestamp
+    * bool fast: Fast search - position on the start of the clip containing the timestamp (instead of the exact frame) 
+    * 
+    * struct timeval ts: Timestamp to seek for.
+    */
+   virtual uint32_t seek(MxPEG_SeekMode mode, bool fast, struct timeval ts) = 0;
+
+   /*
+    * DEPRECATED! play(time) will be removed in the future
+    *
+    * Use seek() to position the player on the requested position, then 
+    * use play() to start the stream. 
+    *
+    *
     * Start playback of the recording at startTime
     *
     * @startTime: Timestamp from which to start playback. If no recording is available from
@@ -315,6 +381,8 @@ public:
     * Returns On success: the command id associated with the request, 0 otherwise
     */
    virtual uint32_t play(struct timeval startTime) = 0;
+
+
 
    /*
     * Start playback of the recording at the current player position
@@ -340,6 +408,17 @@ public:
     *
     */
    virtual uint32_t show() = 0;
+
+
+   /*
+    * Ping camera to test network connection.
+    *
+    * The camera will reply with a pong message the refers to the message id returned by the ping.
+    *
+    * The notification listener will get a message like this:
+    *  {"result":["pong"],"error":null,"id":<ID>}
+    */
+   virtual uint32_t ping() = 0;
 
    /*
     * Sets the playback rate of the current playback session.
