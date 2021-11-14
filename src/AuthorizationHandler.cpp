@@ -5,18 +5,22 @@
 AuthorizationHandler::AuthorizationHandler () {
    std::cout << "Creating AuthorizationHandler" << std::endl;
 }
-
+AuthorizationHandler::AuthorizationHandler (char * username, char * password) {
+   _username = username;
+   _password = password;
+   std::cout << "Creating AuthorizationHandler with username and passsword" << std::endl;
+}
 AuthorizationHandler::~AuthorizationHandler () {
    std::cout << "Deleting AuthorizationHandler" << std::endl;
 }
 
 bool AuthorizationHandler::getUserName(char * buf, size_t bufSz) {
-	snprintf(buf, bufSz, "admin");
+	snprintf(buf, bufSz, _username);
 	return true;
 }
 
 bool AuthorizationHandler::getPassword(char * buf, size_t bufSz) {
-	snprintf(buf, bufSz, "meisnm");
+	snprintf(buf, bufSz, _password);
 	return true;
 }
 

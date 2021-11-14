@@ -15,10 +15,13 @@
 #include <io.h>
 #endif
 
-SinkVideo::SinkVideo(std::string outName)
+SinkVideo::SinkVideo(std::string outName, std::string x, std::string y)
     : m_name(outName), m_count(0)
+
 {
-   std::cout << "Creating SinkVideo using " << outName << " as basename for frames and thermal raw data" << std::endl;
+   pos_x = x;
+   pos_y = y;
+   std::cout << "Creating SinkVideo using '" << outName << "' as basename for frames and thermal raw data" << std::endl;
 }
 
 SinkVideo::~SinkVideo()
@@ -32,7 +35,7 @@ void SinkVideo::writeThermalData(MxPEG_Image &buffer)
    std::shared_ptr<MX_ThermalRawData> rawData = buffer.fetchThermalRawData(MXT_Sensor::left);
 
    // request information about the shutter of the thermal sensor (8 bit FFC counter)
-   //uint8_t ffcCount = buffer.thermalFFCCount(MXT_Sensor::right);
+   // uint8_t ffcCount = buffer.thermalFFCCount(MXT_Sensor::right);
 
    if (rawData.get() != nullptr)
    {
@@ -61,13 +64,13 @@ bool SinkVideo::writeRBG(MxPEG_Image &buffer)
    fVideoOut = fopen(fname, "w");
 
 #if defined(_MSC_VER)
-   //for windows set the out stream to binary mode
+   // for windows set the out stream to binary mode
    int res = _setmode(_fileno(fVideoOut), _O_BINARY);
 #endif
 
    if (fVideoOut != NULL)
    {
-      //only write RGB data
+      // only write RGB data
       if (buffer.mode() == MxPEG_ImageMode::im_RGB)
       {
          /*
@@ -102,12 +105,12 @@ bool SinkVideo::writeThermalRaw(std::shared_ptr<MX_ThermalRawData> rawData)
 
    if (fVideoOut == nullptr)
    {
-      //failed to open output file
+      // failed to open output file
       return false;
    }
 
 #if defined(_MSC_VER)
-   //for windows set the out stream to binary mode
+   // for windows set the out stream to binary mode
    int res = _setmode(_fileno(fVideoOut), _O_BINARY);
 #endif
 
@@ -139,12 +142,12 @@ bool SinkVideo::writeThermalRawIntCSV(std::shared_ptr<MX_ThermalRawData> rawData
 
    if (fVideoOut == nullptr)
    {
-      //failed to open output file
+      // failed to open output file
       return false;
    }
 
 #if defined(_MSC_VER)
-   //for windows set the out stream to binary mode
+   // for windows set the out stream to binary mode
    int res = _setmode(_fileno(fVideoOut), _O_BINARY);
 #endif
 
@@ -175,10 +178,10 @@ bool SinkVideo::writeThermalRawIntCSV(std::shared_ptr<MX_ThermalRawData> rawData
       for (uint32_t x = 0; x < rawData->width(); ++x)
       {
          uint32_t offset = y * (rawData->width() * 2) + (x * 2);
-         //sanity check - should never happen
+         // sanity check - should never happen
          if ((offset + 1) >= rawBufferSize)
             break;
-         //make sure to clear 2 msb
+         // make sure to clear 2 msb
          uint8_t highByte = (rawBuffer[offset + 1] & 0x3F);
          uint8_t lowByte = rawBuffer[offset];
          uint32_t value = (highByte << 8) + lowByte;
@@ -203,14 +206,15 @@ bool SinkVideo::writeThermalCelsiusCSV(std::shared_ptr<MX_ThermalRawData> rawDat
       std::cout << "conversion to absolute temperatures is only supported for sensors with advanced radiometry support" << std::endl;
       return false;
    }
-   char fname[1024];
+   char formated_time[24];
    struct tm *timenow;
 
    time_t now = time(NULL);
    timenow = gmtime(&now);
-
-   strftime(fname, sizeof(fname), "../output/%Y%m%d_%H%M%S.csv", timenow);
-
+   
+   char basename[1024];
+   strftime(formated_time, sizeof(formated_time), "%Y%m%d_%H%M%S.csv", timenow);
+   sprintf(basename, "../output/x%s_y%s_%s.csv", pos_x.c_str(), pos_y.c_str(), formated_time);
    // snprintf(fname, 1024, "../output/%s.%03d.thermal.celsius.csv"
    // m_name.c_str(),
    // m_count,
@@ -220,16 +224,16 @@ bool SinkVideo::writeThermalCelsiusCSV(std::shared_ptr<MX_ThermalRawData> rawDat
    // ((rawData->bitDepth() == MXT_BitDepth::depth14bit) ? "14bit" : "unknown")
    // );
    FILE *fVideoOut = NULL;
-   fVideoOut = fopen(fname, "w");
+   fVideoOut = fopen(basename, "w");
 
    if (fVideoOut == nullptr)
    {
-      //failed to open output file
+      std::cout << "failed to open output file" << std::endl;
       return false;
    }
 
 #if defined(_MSC_VER)
-   //for windows set the out stream to binary mode
+   // for windows set the out stream to binary mode
    int res = _setmode(_fileno(fVideoOut), _O_BINARY);
 #endif
 
@@ -281,10 +285,10 @@ MxPEG_ReturnCode SinkVideo::doConsumeVideo(MxPEG_Image::unique_ptr_t buffer)
              << " type: " << ((buffer->mode() == MxPEG_ImageMode::im_YUV) ? "YUV" : "BGRA")
              << " ts: " << syncTime << std::endl;
 
-   //write the RGB image data
-   // writeRBG(*buffer);
+   // write the RGB image data
+   //  writeRBG(*buffer);
 
-   //write the thermal data
+   // write the thermal data
    writeThermalData(*buffer);
    std::cout << "Exiting in a hacky way...\n";
    exit(0);
