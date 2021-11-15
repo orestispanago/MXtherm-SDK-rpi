@@ -15,13 +15,13 @@
 #include <io.h>
 #endif
 
-SinkVideo::SinkVideo(std::string outName, std::string x, std::string y)
-    : m_name(outName), m_count(0)
+SinkVideo::SinkVideo(std::string outName, std::string x, std::string y, std::string out_dir)
+    : m_name(outName), m_count(0), out_dir(out_dir)
 
 {
    pos_x = x;
    pos_y = y;
-   std::cout << "Creating SinkVideo using '" << outName << "' as basename for frames and thermal raw data" << std::endl;
+   std::cout << "Creating SinkVideo" << std::endl;
 }
 
 SinkVideo::~SinkVideo()
@@ -214,7 +214,7 @@ bool SinkVideo::writeThermalCelsiusCSV(std::shared_ptr<MX_ThermalRawData> rawDat
    
    char basename[1024];
    strftime(formated_time, sizeof(formated_time), "%Y%m%d_%H%M%S.csv", timenow);
-   sprintf(basename, "../output/x%s_y%s_%s.csv", pos_x.c_str(), pos_y.c_str(), formated_time);
+   sprintf(basename, "%s/x%s_y%s_%s.csv", out_dir.c_str(), pos_x.c_str(), pos_y.c_str(), formated_time);
    // snprintf(fname, 1024, "../output/%s.%03d.thermal.celsius.csv"
    // m_name.c_str(),
    // m_count,
@@ -286,7 +286,7 @@ MxPEG_ReturnCode SinkVideo::doConsumeVideo(MxPEG_Image::unique_ptr_t buffer)
              << " ts: " << syncTime << std::endl;
 
    // write the RGB image data
-   //  writeRBG(*buffer);
+    writeRBG(*buffer);
 
    // write the thermal data
    writeThermalData(*buffer);

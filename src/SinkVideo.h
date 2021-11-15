@@ -18,11 +18,7 @@ using namespace ie::MxPEG;
 class SinkVideo : public MxPEG_SinkVideo
 {
 public:
-   /*
-    * Constructor of the sample sink, takes the base name for the files generated as parameter.
-    */
-   SinkVideo(std::string outName, std::string x, std::string y);
-
+   SinkVideo(std::string outName, std::string x, std::string y, std::string out_dir);
    virtual ~SinkVideo();
 
 protected:
@@ -60,6 +56,7 @@ private:
    std::string m_name;
    std::string pos_x;
    std::string pos_y;
+   std::string out_dir;
    uint32_t m_count;
 };
 

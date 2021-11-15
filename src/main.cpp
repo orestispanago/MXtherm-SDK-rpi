@@ -25,8 +25,15 @@ int main(int argc, char **argv)
       exit(1);
    }
 
+   char *camera_ip = argv[1];
+   char *username = argv[2];
+   char *password = argv[3];
+   char *pos_x = argv[4];
+   char *pos_y = argv[5];
+   char *output_dir = argv[6];
+
    char url[URL_SZ] = "";
-   snprintf(url, URL_SZ, "http://%s/control/eventstream.jpg", argv[1]);
+   snprintf(url, URL_SZ, "http://%s/control/eventstream.jpg", camera_ip);
 
 #ifdef _MSC_VER
    WSADATA wsaData;
@@ -38,9 +45,9 @@ int main(int argc, char **argv)
       return 1;
    }
 #endif
-   MxPEG_SinkVideo::shared_ptr_t sinkVideo = MxPEG_SinkVideo::shared_ptr_t(new SinkVideo("stream", argv[4], argv[5]));
+   MxPEG_SinkVideo::shared_ptr_t sinkVideo = MxPEG_SinkVideo::shared_ptr_t(new SinkVideo("stream", pos_x, pos_y, output_dir));
    MxPEG_SinkAudio::shared_ptr_t sinkAudio = MxPEG_SinkAudio::shared_ptr_t(new SinkAudio());
-   MxPEG_AuthorizationHandler::shared_ptr_t authHandler = MxPEG_AuthorizationHandler::shared_ptr_t(new AuthorizationHandler(argv[2], argv[3]));
+   MxPEG_AuthorizationHandler::shared_ptr_t authHandler = MxPEG_AuthorizationHandler::shared_ptr_t(new AuthorizationHandler(username, password));
    MxPEG_EventNotificationListener::shared_ptr_t notificationListener = MxPEG_EventNotificationListener::shared_ptr_t(new NotificationListener());
    MxPEG_SDK::shared_ptr_t client = MxPEG_SDK_Factory::create(sinkAudio, sinkVideo, MxPEG_ImageMode::im_RGB, authHandler, notificationListener);
    client->stream_setup(url);
