@@ -1,15 +1,9 @@
 #ifndef SAMPLE_SINKVIDEO_H_
 #define SAMPLE_SINKVIDEO_H_
 
-#ifdef WINDOWS
-#include <Windows.h>
-#endif
-
 #include "MxPEG_SinkVideo.hpp"
 #include "MxPEG_Image.hpp"
 #include "MxPEG_Defines.hpp"
-
-#include <string>
 
 using namespace ie::MxPEG;
 /*
@@ -18,7 +12,7 @@ using namespace ie::MxPEG;
 class SinkVideo : public MxPEG_SinkVideo
 {
 public:
-   SinkVideo(std::string outName, std::string x, std::string y, std::string out_dir);
+   SinkVideo(char *output_file);
    virtual ~SinkVideo();
 
 protected:
@@ -53,10 +47,7 @@ private:
     */
    bool writeThermalCelsiusCSV(std::shared_ptr<MX_ThermalRawData> rawData);
 
-   std::string m_name;
-   std::string pos_x;
-   std::string pos_y;
-   std::string out_dir;
+   char *output_file_path;
    uint32_t m_count;
 };
 

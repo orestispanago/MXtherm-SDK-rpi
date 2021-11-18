@@ -4,56 +4,95 @@
 #include "SinkAudio.h"
 #include "AuthorizationHandler.h"
 #include "NotificationListener.h"
-
 #include <iostream>
 #include <memory>
+#include <stdio.h>
+#include <stdlib.h>
+#include <getopt.h>
 
 #define URL_SZ 256
 
 using namespace ie::MxPEG;
 
+char *ip, *user, *pass, *output_file;
+
+int arg_parser(int argc, char **argv)
+{
+   int c;
+
+   while (1)
+   {
+      static struct option long_options[] =
+          {
+              {"ip", required_argument, 0, 'i'},
+              {"user", required_argument, 0, 'u'},
+              {"pass", required_argument, 0, 'p'},
+              {"output_file", required_argument, 0, 'o'},
+              {0, 0, 0, 0}};
+      /* getopt_long stores the option index here. */
+      int option_index = 0;
+
+      c = getopt_long(argc, argv, "i:u:p:o:",
+                      long_options, &option_index);
+      /* Detect the end of the options. */
+      if (c == -1)
+         break;
+
+      switch (c)
+      {
+      case 'i':
+         ip = optarg;
+         break;
+
+      case 'u':
+         user = optarg;
+         break;
+
+      case 'p':
+         pass = optarg;
+         break;
+
+      case 'o':
+         output_file = optarg;
+         break;
+
+      case '?':
+         /* getopt_long already printed an error message. */
+         break;
+
+      default:
+         abort();
+      }
+   }
+
+   // printf("ip: %s\n", ip);
+   // printf("user: %s\n", user);
+   // printf("pass: %s\n", pass);
+   // printf("output: %s\n", output_file);
+
+   /* Print any remaining command line arguments (not options). */
+   if (optind < argc)
+   {
+      printf("non-option ARGV-elements: ");
+      while (optind < argc)
+         printf("%s ", argv[optind++]);
+      putchar('\n');
+   }
+
+   return 0;
+}
+
 int main(int argc, char **argv)
 {
-   std::cout << "EventStream client SDK thermal raw data example" << std::endl;
-
-   if (argc < 2)
-   {
-      std::cout << "Missing parameter hostname/IP" << std::endl;
-      std::cout << "Start with " << argv[0] << " [hostname|IP]" << std::endl;
-      std::cout << "Press enter to exit" << std::endl;
-      getchar();
-      exit(1);
-   }
-
-   char *camera_ip = argv[1];
-   char *username = argv[2];
-   char *password = argv[3];
-   char *pos_x = argv[4];
-   char *pos_y = argv[5];
-   char *output_dir = argv[6];
-
+   arg_parser(argc, argv);
    char url[URL_SZ] = "";
-   snprintf(url, URL_SZ, "http://%s/control/eventstream.jpg", camera_ip);
-
-#ifdef _MSC_VER
-   WSADATA wsaData;
-   int iResult;
-   iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-   if (iResult != NO_ERROR)
-   {
-      std::cout << "WSAStartup failed: " << iResult << std::endl;
-      return 1;
-   }
-#endif
-   MxPEG_SinkVideo::shared_ptr_t sinkVideo = MxPEG_SinkVideo::shared_ptr_t(new SinkVideo("stream", pos_x, pos_y, output_dir));
+   snprintf(url, URL_SZ, "http://%s/control/eventstream.jpg", ip);
+   MxPEG_SinkVideo::shared_ptr_t sinkVideo = MxPEG_SinkVideo::shared_ptr_t(new SinkVideo(output_file));
    MxPEG_SinkAudio::shared_ptr_t sinkAudio = MxPEG_SinkAudio::shared_ptr_t(new SinkAudio());
-   MxPEG_AuthorizationHandler::shared_ptr_t authHandler = MxPEG_AuthorizationHandler::shared_ptr_t(new AuthorizationHandler(username, password));
+   MxPEG_AuthorizationHandler::shared_ptr_t authHandler = MxPEG_AuthorizationHandler::shared_ptr_t(new AuthorizationHandler(user, pass));
    MxPEG_EventNotificationListener::shared_ptr_t notificationListener = MxPEG_EventNotificationListener::shared_ptr_t(new NotificationListener());
    MxPEG_SDK::shared_ptr_t client = MxPEG_SDK_Factory::create(sinkAudio, sinkVideo, MxPEG_ImageMode::im_RGB, authHandler, notificationListener);
    client->stream_setup(url);
-   /*
-    * Do not activate audio for this session (the audio sink in this example will drop all audio data anyway)
-    */
    client->setAudioActive(false);
    client->setVideoActive(true);
 
@@ -67,21 +106,9 @@ int main(int argc, char **argv)
     * See SinkVideo.[cpp|h] for examples how to access and process the thermal raw data
     */
    client->setThermalRawExportActive(true);
-
-   /*
-    * tell the camera to start sending live pictures (thermal raw data is sent as part of the video stream)
-    */
    client->startLive();
-
-   /*
-    * The SDK library is single threaded, the function loop() acts as the main loop of the library. Call it repeatedly
-    * from the applications main loop.
-    */
    while (true)
    {
       client->loop();
    }
-#ifdef _MSC_VER
-   WSACleanup();
-#endif
 }
