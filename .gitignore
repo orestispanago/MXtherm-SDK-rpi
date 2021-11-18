@@ -1,3 +1,8 @@
 *.csv
 *.o
 *.d
+.vscode/
+
+src/build/
+
+output/
