@@ -4,12 +4,12 @@ Downloads raw data from Mobotix IP cam thermal sensor.
 
 Converts to Celsius
 
-Saves to ```x<pos_x>_y<pos_y>_<date_time>.csv``` and exits.
+Saves to ```.csv``` and exits.
 
-IP, username, password, x and y positions are passed as arguments.
+IP, username, password and output file path are passed as arguments.
 
-Example command for x=90, y=45:
+Example:
 
-``` ./build/thermal-raw 150.140.194.28 admin 'pass!@' 90 45 ```
+``` ./build/thermal-raw --ip 0.0.0.0 --user admin --pass 'pass!@' --output ../output/a.csv```
 
 Based on [Mobotix EventStreamClient](https://developer.mobotix.com/) thermal-raw example.
