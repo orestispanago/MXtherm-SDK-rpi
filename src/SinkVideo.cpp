@@ -1,14 +1,9 @@
 #include "SinkVideo.h"
 #include "MxPEG_ThermalRawData.hpp"
 #include "MxPEG_Image.hpp"
-
 #include <iostream>
-// #include <string>
 #include <sstream>
-// #include <assert.h>
 #include <stdio.h>
-// #include <time.h>
-// #include <unistd.h>
 
 SinkVideo::SinkVideo(char *output_file)
     : output_file_path(output_file)
@@ -89,9 +84,7 @@ bool SinkVideo::writeThermalCelsiusCSV(std::shared_ptr<MX_ThermalRawData> rawDat
 
 MxPEG_ReturnCode SinkVideo::doConsumeVideo(MxPEG_Image::unique_ptr_t buffer)
 {
-
    m_count++;
-
    /*
     * get the timestamp for each frame - in this example only used for debug output
     */
@@ -106,5 +99,4 @@ MxPEG_ReturnCode SinkVideo::doConsumeVideo(MxPEG_Image::unique_ptr_t buffer)
    writeThermalData(*buffer);
    std::cout << "Exiting in a hacky way...\n";
    exit(0);
-   return er_Success;
 }
