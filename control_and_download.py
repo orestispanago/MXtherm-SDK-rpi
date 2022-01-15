@@ -76,7 +76,7 @@ def move_cam_and_download(folder):
                 move_cam(y)
                 if(y != "y90"):
                     download_photo(folder, x, y)
-                    cameraSDKCommand = f"{cameraSDKCommand} --output output/{x}_{y}.csv"
+                    cameraSDKCommand = f"{cameraSDKCommand} --output {folder}/{x}_{y}.csv"
                     os.system(cameraSDKCommand)
 
 
