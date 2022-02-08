@@ -2,7 +2,7 @@ SDK_DIR := ../
 
 BUILD := build
 
-BIN := thermal-raw
+BIN := mxtherm
 
 SRC_DIR := .
 

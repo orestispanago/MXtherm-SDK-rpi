@@ -2,44 +2,54 @@
 #include <iostream>
 #include <string.h>
 
-AuthorizationHandler::AuthorizationHandler () {
+AuthorizationHandler::AuthorizationHandler()
+{
    std::cout << "Creating AuthorizationHandler" << std::endl;
 }
-AuthorizationHandler::AuthorizationHandler (char * username, char * password) {
+AuthorizationHandler::AuthorizationHandler(char *username, char *password)
+{
    _username = username;
    _password = password;
    std::cout << "Creating AuthorizationHandler with username and passsword" << std::endl;
 }
-AuthorizationHandler::~AuthorizationHandler () {
+AuthorizationHandler::~AuthorizationHandler()
+{
    std::cout << "Deleting AuthorizationHandler" << std::endl;
 }
 
-bool AuthorizationHandler::getUserName(char * buf, size_t bufSz) {
-	snprintf(buf, bufSz, _username);
-	return true;
-}
-
-bool AuthorizationHandler::getPassword(char * buf, size_t bufSz) {
-	snprintf(buf, bufSz, _password);
-	return true;
-}
-
-bool AuthorizationHandler::haveCredentials() {
+bool AuthorizationHandler::getUserName(char *buf, size_t bufSz)
+{
+   snprintf(buf, bufSz, _username);
    return true;
 }
 
-void AuthorizationHandler::authenticationFailed() {
+bool AuthorizationHandler::getPassword(char *buf, size_t bufSz)
+{
+   snprintf(buf, bufSz, _password);
+   return true;
+}
+
+bool AuthorizationHandler::haveCredentials()
+{
+   return true;
+}
+
+void AuthorizationHandler::authenticationFailed()
+{
    std::cout << "Authentication failed" << std::endl;
 }
 
-void AuthorizationHandler::connectionAborted() {
+void AuthorizationHandler::connectionAborted()
+{
    std::cout << "Connection aborted" << std::endl;
 }
 
-unsigned int AuthorizationHandler::maxRetries() {
+unsigned int AuthorizationHandler::maxRetries()
+{
    return 3;
 }
 
-bool AuthorizationHandler::reconnectOnAuthFail() {
+bool AuthorizationHandler::reconnectOnAuthFail()
+{
    return false;
 }
