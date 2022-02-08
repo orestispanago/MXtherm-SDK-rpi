@@ -1,4 +1,5 @@
 *.csv
+!aimpoints.csv
 *.o
 *.d
 *.png
