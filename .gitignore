@@ -1,3 +1,7 @@
 *.csv
 *.o
 *.d
+*.png
+*.err
+*.log
+__pycache__/

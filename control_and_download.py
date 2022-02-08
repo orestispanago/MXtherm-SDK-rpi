@@ -1,91 +1,49 @@
-#!/usr/bin/env python3
-
-import serial
-import time
 import datetime
-import urllib.request
 import os
-import ftplib
 import shutil
+
+from aimpoint import AimPoint
+from camera import CamClient
+from motors import MotorController
+from nas import FTPClient
 
 ftp_ip = ""
 ftp_user = ""
 ftp_password = ""
-ftp_dir = ""
+ftp_share = ""
 
-cameraIP = ""
-camera_user = ""
-camera_password = ""
-cameraYPositions = ["y90", "Y45", "y90", "y135", "y90"]
-cameraXPositions = ["x90", "x180", "x90"]
-cameraUrl = f"http://{cameraIP}/cgi-bin/image.jpg"
+cam_ip = ""
+cam_user = ""
+cam_passwd = ""
+mxtherm = "src/build/mxtherm"
 
-thermal_downloader = "./src/build/mxtherm"
-cameraSDKCommand = f"{thermal_downloader} --ip {cameraIP} --user {camera_user} --pass {camera_password}"
 
 def mkdir_if_not_exists(dir_path):
     if not os.path.exists(dir_path):
-        os.mkdir(dir_path)
+        os.makedirs(dir_path)
 
 
-def connect_to_arduino():
-    arduinoConnection = False
-    for i in range(3):
-        if (arduinoConnection == False):
-            try:
-                arduinoDevice = serial.Serial(
-                    '/dev/ttyUSB0', baudrate=9600, timeout=1)
-                arduinoDevice.flush()
-                arduinoConnection = True
-                print("Connection with Arduino established!\n")
-                return arduinoDevice
-            except:
-                time.sleep(1)
+now = datetime.datetime.utcnow()
+print(now)
+local_folder = now.strftime("%Y/%m/%d/%H/%M")
 
+motor_controller = MotorController()
+mkdir_if_not_exists(local_folder)
 
-def upload_ftp(filePathToSend):
-    session = ftplib.FTP(ftp_ip, ftp_user, ftp_password, timeout=20)
-    file = open(filePathToSend, 'rb')
-    fileToSend = os.path.basename(filePathToSend)
-    sendFileCommand = f"STOR {ftp_dir}/{fileToSend}"
-    session.storbinary(sendFileCommand, file)
-    file.close()
-    session.quit()
+cam_client = CamClient(cam_ip, cam_user, cam_passwd, mxtherm)
+cam_client.enable_thermal_raw_data()
+print(os.getcwd())
+aimpoints = AimPoint.from_file("aimpoints.csv")
 
+for aim_point in aimpoints:
+    motor_controller.rotate_cam("x", aim_point.x)
+    motor_controller.rotate_cam("y", aim_point.y)
+    if aim_point.photo:
+        base_name = f"{local_folder}/x{aim_point.x}_y{aim_point.y}"
+        cam_client.download_img(f"{base_name}.png")
+        cam_client.download_thermal(f"{base_name}.csv")
 
-def move_cam(pos):
-    raspberryCommand = pos + "\n"
-    while True:
-        arduinoDevice.write(raspberryCommand.encode())
-        arduinoResponse = arduinoDevice.readline().decode('utf-8').rstrip()
-        if(pos in arduinoResponse):
-            print(arduinoResponse)
-            break
+with FTPClient(ftp_ip, ftp_user, ftp_password, ftp_share) as ftp_client:
+    ftp_client.upload_folder(local_folder)
 
-
-def download_photo(cameraUrl, folder, x, y):
-    pic_path = f"{folder}/_x{x}_y{y}.jpg"
-    urllib.request.urlretrieve(cameraUrl, pic_path)
-
-
-def move_cam_and_download(folder):
-    for x in cameraXPositions:
-        move_cam(x)
-        if(x != "x90"):
-            for y in cameraYPositions:
-                move_cam(y)
-                if(y != "y90"):
-                    download_photo(folder, x, y)
-                    cameraSDKCommand = f"{cameraSDKCommand} --output output/{x}_{y}.csv"
-                    os.system(cameraSDKCommand)
-
-
-arduinoDevice = connect_to_arduino()
-
-now = datetime.datetime.now()
-folderPath = now.strftime("%Y/%m/%d/%H/%M")
-
-mkdir_if_not_exists(folderPath)
-move_cam_and_download(folderPath)
-upload_ftp(folderPath)
-shutil.rmtree(folderPath)
+shutil.rmtree(local_folder)
