@@ -14,3 +14,13 @@ Example:
 ``` ./build/thermal-raw --ip 0.0.0.0 --user admin --pass 'pass!@' --output ../output/a.csv```
 
 Based on [Mobotix EventStreamClient](https://developer.mobotix.com/) thermal-raw example.
+
+#### Static Download
+`static_download.py` downloads image and temperatures file without moving the camera.
+
+This script has logging functionality.
+
+Cronjob:
+```
+*/5 * * * * /usr/bin/flock -w 0 ~/Mobotix-Downloader-SDK.lock python3 ~/Mobotix-Downloader-SDK/static_download.py
+```
