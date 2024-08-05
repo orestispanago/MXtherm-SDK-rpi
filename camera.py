@@ -1,7 +1,10 @@
 import os
+import logging
 
 import requests
 from requests.auth import HTTPDigestAuth
+
+logger = logging.getLogger(__name__)
 
 
 class CamClient:
@@ -19,15 +22,18 @@ class CamClient:
         self.get_digest_auth(url)
 
     def download_img(self, fname):
+        logger.debug(f"Downloading image: {fname}...")
         url = f"http://{self.ip}/cgi-bin/image.jpg?display_mode=simple"
         resp = self.get_digest_auth(url)
         if resp.status_code == 200:
             with open(fname, "wb") as f:
                 f.write(resp.content)
+            logger.debug(f"Downloaded image: {fname}")
         else:
-            print(resp.status_code)
+            logger.error(resp.status_code)
 
     def download_thermal(self, fname):
+        logger.debug(f"Downloading thermal data: {fname}...")
         cmd = (
             f"{self.thermal_downloader_path} "
             f"--ip {self.ip} "
@@ -36,3 +42,4 @@ class CamClient:
             f"--output {fname}"
         )
         os.system(cmd)
+        logger.debug(f"Downloaded thermal data: {fname}")

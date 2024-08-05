@@ -1,6 +1,9 @@
 import ftplib
 import glob
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class FTPClient:
@@ -34,9 +37,12 @@ class FTPClient:
         Creates remote directory tree if necessary.
         :param folder_path: local folder path
         """
+        logger.debug(f"Uploading to FTP...")
         self._make_dirs(folder_path)
-        for file_path in glob.glob(f"{folder_path}/*"):
+        local_files = glob.glob(f"{folder_path}/*")
+        for file_path in local_files:
+            remote_path = os.path.split(file_path)[1]
             with open(file_path, "rb") as f:
-                self.session.storbinary(
-                    f"STOR {os.path.split(file_path)[1]}", f
-                )
+                self.session.storbinary(f"STOR {remote_path}", f)
+            logger.debug(f"Uploaded {file_path} to {remote_path} at FTP")
+        logger.info(f"Uploaded {len(local_files)} files to FTP")

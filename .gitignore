@@ -6,3 +6,4 @@
 *.err
 *.log
 __pycache__/
+static/
