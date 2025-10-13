@@ -1,4 +1,5 @@
 import datetime
+import glob
 import os
 import shutil
 import traceback
@@ -45,9 +46,12 @@ def main():
     mkdir_if_not_exists(local_folder)
     cam_client.download_img(f"{base_name}.png")
     cam_client.download_thermal(f"{base_name}.csv")
-    with FTPClient(ftp_ip, ftp_user, ftp_password, ftp_share) as ftp_client:
-        ftp_client.upload_folder(local_folder)
-    shutil.rmtree(local_folder)
+    local_folders = glob.glob("static/*/*/*/")
+    for folder in local_folders:
+        folder = folder[:-1]  # Strip trailing slash
+        with FTPClient(ftp_ip, ftp_user, ftp_password, ftp_share) as ftp_client:
+            ftp_client.upload_folder(folder)
+        shutil.rmtree(folder)
     logger.info(f"{'-' * 15} SUCCESS {'-' * 15}")
 
 
@@ -56,3 +60,4 @@ if __name__ == "__main__":
         main()
     except:
         logger.error("uncaught exception: %s", traceback.format_exc())
+
