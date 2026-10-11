@@ -7,16 +7,10 @@ import logging
 import logging.config
 
 from camera import CamClient
+from config import CAM_IP, CAM_PASS, CAM_USER, FTP_IP, FTP_PASS, FTP_USER
 from nas import FTPClient
 
-ftp_ip = ""
-ftp_user = ""
-ftp_password = ""
 ftp_share = "/cams/Thermal/Mobotix"
-
-cam_ip = ""
-cam_user = ""
-cam_passwd = ""
 mxtherm = "src/build/mxtherm"
 
 dname = os.path.dirname(__file__)
@@ -32,7 +26,7 @@ def mkdir_if_not_exists(dir_path):
         os.makedirs(dir_path)
 
 
-cam_client = CamClient(cam_ip, cam_user, cam_passwd, mxtherm)
+cam_client = CamClient(CAM_IP, CAM_USER, CAM_PASS, mxtherm)
 cam_client.enable_thermal_raw_data()
 
 utc_now = datetime.datetime.now(tz=datetime.timezone.utc)
@@ -49,7 +43,7 @@ def main():
     local_folders = glob.glob("static/*/*/*/")
     for folder in local_folders:
         folder = folder[:-1]  # Strip trailing slash
-        with FTPClient(ftp_ip, ftp_user, ftp_password, ftp_share) as ftp_client:
+        with FTPClient(FTP_IP, FTP_USER, FTP_PASS, ftp_share) as ftp_client:
             ftp_client.upload_folder(folder)
         shutil.rmtree(folder)
     logger.info(f"{'-' * 15} SUCCESS {'-' * 15}")

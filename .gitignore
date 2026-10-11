@@ -4,6 +4,7 @@
 *.d
 *.png
 *.err
-*.log
+logs/
 __pycache__/
 static/
+.env

@@ -4,6 +4,16 @@ Rotates camera around 2 axes, downloads images and temperatures .csv file.
 
 Uploads folder to FTP server, creating the remote path if it does not exist.
 
+Setup:
+
+```
+sudo apt install python3-dotenv
+cp .env.example .env
+chmod 600 .env
+```
+
+Set the real values in `.env` (FTP and camera credentials), replacing the placeholders. It is in `.gitignore`.
+
 Cronjob:
 
 ```

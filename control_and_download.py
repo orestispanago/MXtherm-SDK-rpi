@@ -4,17 +4,11 @@ import shutil
 
 from aimpoint import AimPoint
 from camera import CamClient
+from config import CAM_IP, CAM_PASS, CAM_USER, FTP_IP, FTP_PASS, FTP_USER
 from motors import MotorController
 from nas import FTPClient
 
-ftp_ip = ""
-ftp_user = ""
-ftp_password = ""
 ftp_share = ""
-
-cam_ip = ""
-cam_user = ""
-cam_passwd = ""
 mxtherm = "src/build/mxtherm"
 
 
@@ -30,7 +24,7 @@ local_folder = now.strftime("%Y/%m/%d/%H/%M")
 motor_controller = MotorController()
 mkdir_if_not_exists(local_folder)
 
-cam_client = CamClient(cam_ip, cam_user, cam_passwd, mxtherm)
+cam_client = CamClient(CAM_IP, CAM_USER, CAM_PASS, mxtherm)
 cam_client.enable_thermal_raw_data()
 print(os.getcwd())
 aimpoints = AimPoint.from_file("aimpoints.csv")
@@ -43,7 +37,7 @@ for aim_point in aimpoints:
         cam_client.download_img(f"{base_name}.png")
         cam_client.download_thermal(f"{base_name}.csv")
 
-with FTPClient(ftp_ip, ftp_user, ftp_password, ftp_share) as ftp_client:
+with FTPClient(FTP_IP, FTP_USER, FTP_PASS, ftp_share) as ftp_client:
     ftp_client.upload_folder(local_folder)
 
 shutil.rmtree(local_folder)
