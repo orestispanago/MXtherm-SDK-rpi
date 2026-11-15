@@ -26,6 +26,13 @@ def mkdir_if_not_exists(dir_path):
         os.makedirs(dir_path)
 
 
+def delete_empty_parents(folder):
+    try:
+        os.removedirs(os.path.dirname(folder))
+    except OSError:
+        pass
+
+
 cam_client = CamClient(CAM_IP, CAM_USER, CAM_PASS, mxtherm)
 cam_client.enable_thermal_raw_data()
 
@@ -46,6 +53,7 @@ def main():
         with FTPClient(FTP_IP, FTP_USER, FTP_PASS, ftp_share) as ftp_client:
             ftp_client.upload_folder(folder)
         shutil.rmtree(folder)
+        delete_empty_parents(folder)
     logger.info(f"{'-' * 15} SUCCESS {'-' * 15}")
 
 
