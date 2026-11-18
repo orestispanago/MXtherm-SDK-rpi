@@ -1,5 +1,5 @@
-import os
 import logging
+import subprocess
 
 import requests
 from requests.auth import HTTPDigestAuth
@@ -34,12 +34,16 @@ class CamClient:
 
     def download_thermal(self, fname):
         logger.debug(f"Downloading thermal data: {fname}...")
-        cmd = (
-            f"{self.thermal_downloader_path} "
-            f"--ip {self.ip} "
-            f"--user {self.user} "
-            f"--pass {self.passwd} "
-            f"--output {fname}"
-        )
-        os.system(cmd)
-        logger.debug(f"Downloaded thermal data: {fname}")
+        cmd = [
+            self.thermal_downloader_path,
+            "--ip", self.ip,
+            "--user", self.user,
+            "--pass", self.passwd,
+            "--output", fname,
+        ]
+        try:
+            subprocess.run(cmd, timeout=30)
+        except subprocess.TimeoutExpired:
+            logger.error(f"Thermal data download timed out: {fname}")
+        else:
+            logger.debug(f"Downloaded thermal data: {fname}")
